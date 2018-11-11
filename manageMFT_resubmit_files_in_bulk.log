@@ -1,0 +1,45 @@
+[manageMFT]$ wlst.sh manageMFT.py -loadProperties manageMFT.properties
+
+Initializing WebLogic Scripting Tool (WLST) ...
+
+Welcome to WebLogic Server Administration Scripting Shell
+
+Type help() for help on available commands
+
+2018-11-11_021001 [INFO] Output is sent to manageMFT.log. Log ID = id0813
+
+[1] Resubmit files in bulk using filter (DRY RUN)
+[2] Resubmit files in bulk using filter
+[3] Resubmit files by Target IDs
+[4] Exit
+
+[INPUT] Choose what you want to do from the list above: 2
+
+2018-11-11_023105 [INFO] ======================================================================
+2018-11-11_023105 [INFO] Starting resubmit_files_in_bulk...
+2018-11-11_023105 [INFO] Connecting to t3://localhost:8010 as weblogic...
+2018-11-11_023107 [INFO] Connected to t3://localhost:8010 as weblogic.
+
+[INPUT] Enter Resubmit Type (SOURCE, TARGET, TRANSFER_INSTANCE, TARGET_INSTANCE): TRANSFER_INSTANCE
+[INPUT] Enter Status (FAILED, COMPLETED or ACTIVE):      FAILED
+[INPUT] Enter Artifact name (e.g. TransferName1):     TransferName1
+[INPUT] Enter Start time (e.g. 01-01-2018 00:00:00:000): 01-01-2018 00:00:00:000
+[INPUT] Enter End time (e.g. 31-12-2018 23:59:59:999):
+[INPUT] Enter Chunk size (e.g. 100):
+[INPUT] Enter Chunk delay in sec (e.g. 10):
+[INPUT] Enter comma separated Tracking IDs to ignore:    866AF741-379E-47C9-B214-46A6805070C2, 5697610E-4EFE-42D5-A075-BCD22C873713
+[INPUT] Enter Comments (e.g. Manual file resubmission):  Test resubmission
+
+2018-11-11_023216 [INFO] Filter: (resubmitType=TRANSFER_INSTANCE, status=FAILED, artifactName=TransferName1, startTime=01-01-2018 00:00:00:000, endTime=, chunkSize=-1, chunkDelay=-1, ignoreIds=866AF741-379E-47C9-B214-46A6805070C2, 5697610E-4EFE-42D5-A075-BCD22C873713, previewMode=False)
+
+2018-11-11_023216 [INFO] Running in DRY MODE to get the Target IDs first...
+
+2018-11-11_023216 [INFO] Dry run results:
+
+Running in preview mode.
+Count for messages matching the criteria 3
+Message Ids: [4F04AD28-2596-4BCE-9247-895862AF23D4, 70CCA91F-E8BC-468C-9529-7A05E5E3A261, C334FE52-8DBA-4284-BCEF-1BC254CBF8BC]
+
+[INPUT] Are you sure you want to resubmit 3 messages, Y/N [N]? Y
+2018-11-11_023230 [INFO] Resubmitting the messages...
+2018-11-11_023230 [INFO] resubmit_files_in_bulk successfully completed

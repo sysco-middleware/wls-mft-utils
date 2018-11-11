@@ -1,0 +1,31 @@
+[manageMFT]$ wlst.sh manageMFT.py -loadProperties manageMFT.properties
+
+Initializing WebLogic Scripting Tool (WLST) ...
+
+Welcome to WebLogic Server Administration Scripting Shell
+
+Type help() for help on available commands
+
+2018-11-11_021001 [INFO] Output is sent to manageMFT.log. Log ID = id0813
+
+[1] Resubmit files in bulk using filter (DRY RUN)
+[2] Resubmit files in bulk using filter
+[3] Resubmit files by Target IDs
+[4] Exit
+
+[INPUT] Choose what you want to do from the list above: 3
+
+2018-11-11_023837 [INFO] ======================================================================
+2018-11-11_023837 [INFO] Starting resubmit_files_by_ids...
+[INPUT] Enter Resubmit Type (SOURCE, TARGET, TRANSFER_INSTANCE, TARGET_INSTANCE): TRANSFER_INSTANCE
+2018-11-11_023841 [INFO] Provided Resubmit type: TRANSFER_INSTANCE
+[INPUT] Provide a list of comma separated Tracking IDs or type 'file': file
+[INPUT] Enter the name of the file containing IDs. NB! The file must be located in the same directory as this script: target_ids_example.txt
+2018-11-11_023911 [INFO] List of Tracking IDs was read from target_ids_example.txt
+[INPUT] Enter Comments (e.g. vimosh file resubmission): Manual resubmission
+2018-11-11_023929 [INFO] Provided comments: Manual resubmission
+
+2018-11-11_023929 [INFO] Resubmitting files started
+Resubmit for Ids [F0679473-C91B-4A86-ABAB-971701972410, 866AF741-379E-47C9-B214-46A6805070C2, 5697610E-4EFE-42D5-A075-BCD22C873713] initiated.
+
+2018-11-11_023929 [INFO] resubmit_files_by_ids successfully completed
