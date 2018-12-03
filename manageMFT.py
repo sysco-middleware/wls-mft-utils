@@ -22,7 +22,6 @@ def resubmit_files_in_bulk(is_dry):
     In case of dry run (preview_mode = "True") the function returns targetIds and the number of files that would be
         resubmitted in case of a real run.
     """
-
     while True:
         resubmit_type = raw_input("[INPUT] Enter Resubmit Type (SOURCE, TARGET, TRANSFER_INSTANCE, TARGET_INSTANCE): ")
         if not resubmit_type:
@@ -128,7 +127,6 @@ def resubmit_files_by_ids():
     """
     This function instance id and the number of files that would be resubmitted.
     """
-
     while True:
         resubmit_type = raw_input("[INPUT] Enter Resubmit Type (SOURCE, TARGET, TRANSFER_INSTANCE, TARGET_INSTANCE): ")
         if not resubmit_type:
@@ -138,23 +136,31 @@ def resubmit_files_by_ids():
             break
     resubmit_type = resubmit_type.strip().upper()
     log("INFO", "Provided Resubmit type: " + resubmit_type)
-    id_list = raw_input("[INPUT] Provide a list of comma separated Tracking IDs or type 'file': ")
-    if id_list.lower() == "file":
+    id_list_str = raw_input("[INPUT] Provide a list of comma separated Tracking IDs or type 'file': ")
+
+    id_list = []  # Full list of IDs read from the file
+    id_list_len = 0  # Number of IDs in the file
+
+    if id_list_str.lower().strip() == "file":
         while True:
             id_file_name = raw_input("[INPUT] Enter the name of the file containing IDs. "
                                      "NB! The file must be located in the same directory as this script: ")
             if os.path.exists(id_file_name) and os.path.getsize(id_file_name):
                 id_file = open(id_file_name, "r")
                 id_file_contents = id_file.read()
-                id_list = id_file_contents.replace("\r\n", ", ").replace("\n", ", ")
                 id_file.close()
-                log("INFO", "List of Tracking IDs was read from " + id_file_name)
                 break
             else:
                 print(cur_dt() + " [WARNING] The file either does not exist or is empty. Provide another filename.")
+
+        id_file_contents = id_file_contents.replace("\r\n", "\n")  # Convert EOL to Unix format
+        id_list = id_file_contents.split("\n")
+        id_list_len = len(id_list)
+        log("INFO", "List of Tracking IDs was read from " + id_file_name)
     else:
-        log("INFO", "Provided list of Tracking IDs: " + id_list)
-        id_list = id_list.strip()
+        id_list_str = id_list_str.strip()
+        log("INFO", "Provided list of Tracking IDs: " + id_list_str)
+
     comments = raw_input("[INPUT] Enter Comments (e.g. vimosh file resubmission): ")
     comments = comments.strip()
     log("INFO", "Provided comments: " + comments)
@@ -162,10 +168,35 @@ def resubmit_files_by_ids():
     print("")
 
     try:
-        log("INFO", "Resubmitting files started")
-        resubmit(resubmitType=resubmit_type, idList=id_list, comments=comments)
+        log("INFO", "Starting resubmission...")
+        if id_list_str == "file":
+            if id_list_len > MAX_CHUNK_SIZE:
+                print("")
+                log("INFO", "There are too many ID's in the file. Resubmission will be done in batches of " +
+                    str(MAX_CHUNK_SIZE) + " files each.")
+                print("")
+
+                # Create a list of batches based on id_list and MAX_CHUNK_SIZE, e.g. [[1, 2, 3], [4, 5, 6], [7, 8]]
+                chunk_list = [id_list[i:i + MAX_CHUNK_SIZE] for i in range(0, len(id_list), MAX_CHUNK_SIZE)]
+                chunk_list_len = len(chunk_list)
+
+                # Resubmit files in batches
+                for i, chunk in enumerate(chunk_list):
+                    chunk_size = len(chunk)
+                    chunk_comments = comments + " (part " + str(i) + " of " + str(chunk_list_len) + ")"
+                    log("INFO", "Resubmitting " + str(chunk_size) + " IDs from batch " + str(i + 1) + " of " +
+                        str(chunk_list_len) + "...")
+                    id_list_str = ", ".join(chunk)
+                    resubmit(resubmitType=resubmit_type, idList=id_list_str, comments=chunk_comments)
+                    print("")
+            else:
+                id_list_str = ", ".join(id_list)
+                resubmit(resubmitType=resubmit_type, idList=id_list_str, comments=comments)
+        else:
+            resubmit(resubmitType=resubmit_type, idList=id_list_str, comments=comments)
+
         print("")
-        log("INFO", "resubmit_files_by_ids successfully completed")
+        log("INFO", "resubmit_files_by_ids successfully completed.")
 
     except (WLSTException, ValueError, NameError, Exception, AttributeError, TypeError, JavaException), e:
         log("ERROR", str(e))
@@ -262,7 +293,8 @@ def main():
 # Create a four digit random id left padded with zeros for logging
 n = random.randint(1, 1000)
 ID = "id" + str("%04d" % n)
-        
+MAX_CHUNK_SIZE = 100  # Cannot be higher than 850 due to MFT limitations
+
 # Name of the log file is derived from the name of the script
 log_file_name = sys.argv[0].replace("py", "log")
 tmp_file_name = cur_dt() + "_" + sys.argv[0].replace("py", "tmp")
