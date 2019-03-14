@@ -11,6 +11,7 @@ Usage:
 import os
 import sys
 import random
+import re
 import datetime
 from java.io import File
 from java.io import FileOutputStream
@@ -34,10 +35,22 @@ def resubmit_files_in_bulk(is_dry):
     state = state.strip().upper()
     artifact_name = raw_input("[INPUT] Enter Artifact name (e.g. Evry_EDIFACT_OSB):     ")
     artifact_name = artifact_name.strip()
-    start_time = raw_input("[INPUT] Enter Start time (e.g. 01-01-2018 00:00:00:000): ")
-    start_time = start_time.strip()
-    end_time = raw_input("[INPUT] Enter End time (e.g. 31-12-2018 23:59:59:999):   ")
-    end_time = end_time.strip()
+    # Start and End time must match this pattern:
+    date_pattern = re.compile("^(\d\d-\d\d-\d\d\d\d \d\d:\d\d:\d\d:\d\d\d)$")
+    while True:
+        start_time = raw_input("[INPUT] Enter Start time (e.g. 01-01-2018 00:00:00:000): ")
+        start_time = start_time.strip()
+        if not start_time or date_pattern.match(start_time):
+            break
+        else:
+            print("[WARNING] The date must either be empty or match the following pattern: 'DD-MM-YYYY HH:mm:ss:SSS'. Try again.")
+    while True:
+        end_time = raw_input("[INPUT] Enter End time (e.g. 31-12-2018 23:59:59:999):   ")
+        end_time = end_time.strip()
+        if not end_time or date_pattern.match(end_time):
+            break
+        else:
+            print("[WARNING] The date must either be empty or match the following pattern: 'DD-MM-YYYY HH:mm:ss:SSS'. Try again.")
     if is_dry:
         chunk_size = -1
         chunk_delay = -1
@@ -89,32 +102,32 @@ def resubmit_files_in_bulk(is_dry):
             oldfos = theInterpreter.getOut()
             theInterpreter.setOut(fos)
             resubmitMessages(resubmitType=resubmit_type, state=state, artifactName=artifact_name, startTime=start_time,
-                             endTime=end_time, chunkSize=chunk_size, chunkDelay=chunk_delay, ignoreIds=ignore_ids,
+                             endTime=end_time, chunkSize=int(chunk_size), chunkDelay=int(chunk_delay), ignoreIds=ignore_ids,
                              comments=comments, previewMode="True")
             # Return output to console
             theInterpreter.setOut(oldfos)
             print("")
             cwd = os.getcwd()
             tmp_file = open(tmp_file_name, "r")
-            log("INFO", "Temporary file " + os.path.join(cwd, tmp_file.name) + " created.")
+            # log("INFO", "Temporary file " + os.path.join(cwd, tmp_file.name) + " created.")
             tmp_file_contents = tmp_file.read()
             tmp_file.close()
-            log("INFO", "Removing temporary file " + tmp_file_name + ".")
+            # log("INFO", "Removing temporary file " + tmp_file_name + ".")
             os.remove(tmp_file_name)
             log("INFO", "Dry run results:")
             print("")
             log_report(tmp_file_contents)
             tmp_file_lines = tmp_file_contents.split("\n")
-            tracking_ids = tmp_file_lines[2].replace("Message Ids: [", "").replace("]", "").split(", ")
-            tracking_ids_count = len(tracking_ids)
-            if tracking_ids_count > 0:
+            if len(tmp_file_lines) > 2:
+                tracking_ids = tmp_file_lines[2].replace("Message Ids: [", "").replace("]", "").split(", ")
+                tracking_ids_count = len(tracking_ids)
                 confirm_resubmit = raw_input("[INPUT] Are you sure you want to resubmit " + str(tracking_ids_count) +
                                              " messages, Y/N [N]? ")
                 if confirm_resubmit.upper() == "Y":
                     log("INFO", "Resubmitting the messages...")
                     resubmitMessages(resubmitType=resubmit_type, state=state, artifactName=artifact_name,
-                                     startTime=start_time, endTime=end_time, chunkSize=chunk_size,
-                                     chunkDelay=chunk_delay, ignoreIds=ignore_ids, comments=comments,
+                                     startTime=start_time, endTime=end_time, chunkSize=int(chunk_size),
+                                     chunkDelay=int(chunk_delay), ignoreIds=ignore_ids, comments=comments,
                                      previewMode="False")
         print("")
         log("INFO", log_message)
